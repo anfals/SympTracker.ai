@@ -14,8 +14,11 @@ import {
     Heading,
     HStack,
     useToast,
+    useDisclosure,
 } from '@chakra-ui/react';
 import { get_follow_up_questions } from '@/utils/symptom_analyzer';
+import QuestionnaireModal from './QuestionnaireModal';
+import SummaryModal from './SummaryModal';
 
 export interface Symptom {
     id: number;
@@ -25,10 +28,16 @@ export interface Symptom {
 
 const SymptomTracker = () => {
     const toast = useToast();
+    const { isOpen: isQuestionModalOpen, onOpen: onQuestionModalOpen, onClose: onQuestionModalClose } = useDisclosure();
+    const { isOpen: isSummaryModalOpen, onOpen: onSummaryModalOpen, onClose: onSummaryModalClose } = useDisclosure();
 
     const [symptoms, setSymptoms] = useState<Symptom[]>([]);
     const [newSymptom, setNewSymptom] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+
+    // For the post analyze button workflow
+    const [questions, setQuestions] = useState<string[]>([]);
+    const [summary, setSummary] = useState<string>('');
 
     const handleSymptomSubmit = () => {
         if (newSymptom.trim() !== '') {
@@ -52,6 +61,19 @@ const SymptomTracker = () => {
     return (
         <Box p={4}>
             <VStack spacing={4}>
+                <QuestionnaireModal
+                    isOpen={isQuestionModalOpen}
+                    onClose={onQuestionModalClose}
+                    symptoms={symptoms.map((symptom) => symptom.description)}
+                    questions={questions}
+                    setSummary={setSummary}
+                    openSummaryModal={onSummaryModalOpen}
+                />
+                <SummaryModal
+                    isOpen={isSummaryModalOpen}
+                    onClose={onSummaryModalClose}
+                    summary={summary}
+                />
                 <HStack spacing={4} alignItems={"center"} justifyContent={"space-between"} width={"full"}>
                     <Heading as="h3" size={"md"} alignSelf={"start"}>My Symptoms</Heading>
                     <Button colorScheme="blue" onClick={async () => {
@@ -70,12 +92,12 @@ const SymptomTracker = () => {
                         } else {
                             console.log("Kicking off anthropic call");
                             setLoading(true);
-                            const questions = await axios.post('/api/call_fancy_llm', {
+                            const { data } = await axios.post('/api/call_fancy_llm', {
                                 symptom_list: symptoms
                             });
-                            console.log(questions);
-                            console.log("Finished onClick call.");
+                            setQuestions(data.filtered_questions);
                             setLoading(false);
+                            onQuestionModalOpen();
                         }
                     }}
                         isLoading={loading}

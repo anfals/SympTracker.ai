@@ -10,6 +10,13 @@ export async function POST(request: NextRequest) {
     }
 
     const questions = await get_follow_up_questions(symptom_list);
+    console.log("questions: ", questions);
+    // Delimit questions by newline
+    const parsed_questions = questions.split('\n');
+
+    const filtered_questions = parsed_questions.filter((question) => {
+        return !question.includes('<questions>') && !question.includes('</questions>') && question.length > 0 && question != 'I have no more questions.';
+    })
     
-    return NextResponse.json({questions});
+    return NextResponse.json({filtered_questions});
   }
