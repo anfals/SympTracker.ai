@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import {
     Box,
@@ -14,8 +15,9 @@ import {
     HStack,
     useToast,
 } from '@chakra-ui/react';
+import { get_follow_up_questions } from '@/utils/symptom_analyzer';
 
-interface Symptom {
+export interface Symptom {
     id: number;
     description: string;
     timestamp: string; // Add timestamp property
@@ -26,6 +28,7 @@ const SymptomTracker = () => {
 
     const [symptoms, setSymptoms] = useState<Symptom[]>([]);
     const [newSymptom, setNewSymptom] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
 
     const handleSymptomSubmit = () => {
         if (newSymptom.trim() !== '') {
@@ -51,7 +54,7 @@ const SymptomTracker = () => {
             <VStack spacing={4}>
                 <HStack spacing={4} alignItems={"center"} justifyContent={"space-between"} width={"full"}>
                     <Heading as="h3" size={"md"} alignSelf={"start"}>My Symptoms</Heading>
-                    <Button colorScheme="blue" onClick={() => {
+                    <Button colorScheme="blue" onClick={async () => {
                         console.log("Analyze my symptoms!");
                         // Check if there are any symptoms
                         if (symptoms.length === 0) {
@@ -64,8 +67,19 @@ const SymptomTracker = () => {
                                 isClosable: true,
                             });
                             return;
+                        } else {
+                            console.log("Kicking off anthropic call");
+                            setLoading(true);
+                            const questions = await axios.post('/api/call_fancy_llm', {
+                                symptom_list: symptoms
+                            });
+                            console.log(questions);
+                            console.log("Finished onClick call.");
+                            setLoading(false);
                         }
-                    }}>
+                    }}
+                        isLoading={loading}
+                    >
                         Analyze my Symptoms
                     </Button>
                 </HStack>
@@ -94,7 +108,7 @@ const SymptomTracker = () => {
                 <Divider />
                 <Heading as="h3" size={"md"} alignSelf={"start"}>Add a Symptom</Heading>
                 <Input
-                    placeholder="Enter your symptom..."
+                    placeholder="Enter your symptoms and describe any details that may be helpful."
                     value={newSymptom}
                     onChange={(e) => setNewSymptom(e.target.value)}
                     width={["full", "full", "xl", "2xl"]}
