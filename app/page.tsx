@@ -1,7 +1,7 @@
 'use client'
 
 import SymptomTracker from './components/SymptomTracker'
-import { ChakraProvider, CSSReset, extendTheme } from '@chakra-ui/react';
+import { ChakraProvider, CSSReset, extendTheme, Heading } from '@chakra-ui/react';
 
 const theme = extendTheme({
   // Add custom Chakra UI theme settings if needed
@@ -9,9 +9,12 @@ const theme = extendTheme({
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen w-screen flex-col items-center p-24 bg-gray-50">
       <ChakraProvider theme={theme}>
         <CSSReset />
+        <Heading as="h1" size="2xl" mb={8}>
+          {`Ted Lasso's Symptom Tracker`}
+        </Heading>
         <SymptomTracker />
       </ChakraProvider>
     </main>
