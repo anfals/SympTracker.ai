@@ -12,6 +12,7 @@ import {
     Divider,
     Heading,
     HStack,
+    useToast,
 } from '@chakra-ui/react';
 
 interface Symptom {
@@ -21,6 +22,8 @@ interface Symptom {
 }
 
 const SymptomTracker = () => {
+    const toast = useToast();
+
     const [symptoms, setSymptoms] = useState<Symptom[]>([]);
     const [newSymptom, setNewSymptom] = useState<string>('');
 
@@ -48,13 +51,27 @@ const SymptomTracker = () => {
             <VStack spacing={4}>
                 <HStack spacing={4} alignItems={"center"} justifyContent={"space-between"} width={"full"}>
                     <Heading as="h3" size={"md"} alignSelf={"start"}>My Symptoms</Heading>
-                    <Button colorScheme="blue" onClick={() => setSymptoms([])}>
-                        Clear Symptoms
+                    <Button colorScheme="blue" onClick={() => {
+                        console.log("Analyze my symptoms!");
+                        // Check if there are any symptoms
+                        if (symptoms.length === 0) {
+                            // Chakra toast
+                            toast({
+                                title: "No symptoms to analyze.",
+                                description: "Please add some symptoms to analyze.",
+                                status: "error",
+                                duration: 5000,
+                                isClosable: true,
+                            });
+                            return;
+                        }
+                    }}>
+                        Analyze my Symptoms
                     </Button>
                 </HStack>
                 <Stack spacing={4} align="stretch" width={"full"} justifyContent={"center"} alignItems={"center"}>
                     {symptoms.map((symptom) => (
-                        <Card key={symptom.id} borderWidth="1px" borderRadius="lg" width={["90%", "90%", "xl", "2xl"]}>
+                        <Card key={symptom.id} borderWidth="1px" borderRadius="lg" width={["full", "full", "xl", "2xl"]}>
                             <CardBody>
                                 <Text fontSize="lg">{symptom.description}</Text>
                                 <Text fontSize="sm" color="gray.500">
@@ -80,7 +97,7 @@ const SymptomTracker = () => {
                     placeholder="Enter your symptom..."
                     value={newSymptom}
                     onChange={(e) => setNewSymptom(e.target.value)}
-                    width={["90%", "90%", "xl", "2xl"]}
+                    width={["full", "full", "xl", "2xl"]}
                     height={"200px"}
                 />
                 <Button colorScheme="blue" onClick={handleSymptomSubmit}>
