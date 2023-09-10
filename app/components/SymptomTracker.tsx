@@ -24,6 +24,7 @@ export interface Symptom {
     id: number;
     description: string;
     timestamp: string; // Add timestamp property
+    type: string;
 }
 
 const SymptomTracker = () => {
@@ -39,14 +40,20 @@ const SymptomTracker = () => {
     const [questions, setQuestions] = useState<string[]>([]);
     const [summary, setSummary] = useState<string>('');
 
-    const handleSymptomSubmit = () => {
+    const handleSymptomSubmit = async () => {
         if (newSymptom.trim() !== '') {
             const newId = symptoms.length + 1;
             const timestamp = new Date().toLocaleString(); // Get current timestamp
+
+            const {data} = await axios.post('/api/classify_symptom_llm', {
+                symptom: newSymptom
+            });
+
             const newSymptomEntry: Symptom = {
                 id: newId,
                 description: newSymptom,
                 timestamp: timestamp,
+                type: data.classification
             };
             setSymptoms([...symptoms, newSymptomEntry]);
             setNewSymptom('');
@@ -112,6 +119,9 @@ const SymptomTracker = () => {
                                 <Text fontSize="lg">{symptom.description}</Text>
                                 <Text fontSize="sm" color="gray.500">
                                     {symptom.timestamp}
+                                </Text>
+                                <Text fontSize="sm" color="gray.500">
+                                    {symptom.type}
                                 </Text>
                             </CardBody>
                             <Divider />
